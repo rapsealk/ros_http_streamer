@@ -17,8 +17,11 @@ class ImageMessage():
 
 class ROSVision(object):
 
+    #def __init__(self):
+    #    rospy.init_node("rosvision", anonymous=True)
+
     def callback(self, data):
-        data_message = ImageMessage(data)
+        data_message = data#ImageMessage(data)
         try:
             data_message = CvBridge().imgmsg_to_cv2(data_message)
             ret, jpeg = cv2.imencode('.jpg', data_message)
