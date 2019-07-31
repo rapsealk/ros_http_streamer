@@ -1,8 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 
 def main():
@@ -14,7 +17,10 @@ def main():
     camera = cv2.VideoCapture(0)
     bridge = CvBridge()
 
-    while camera.isOpened:
+    if not camera.isOpened():
+        camera.open(0)
+
+    while camera.isOpened():
         ret, frame = camera.read()
         cv2.imshow("camera_node", frame)
 
