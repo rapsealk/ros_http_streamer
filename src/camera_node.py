@@ -1,8 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import rospy
 from sensor_msgs.msg import Image
-import CvBridge, CvBridgeError
+from cv_bridge import CvBridge, CvBridgeError
 import cv2
 
 def main():
