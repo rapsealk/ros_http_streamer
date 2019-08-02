@@ -1,6 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import rospy
 from std_msgs.msg import String
 

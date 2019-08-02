@@ -1,5 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
+import sys
+import logging
+FORMAT = '%(asctime)-15s [%(levelname)s] %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -17,22 +24,25 @@ class ImageMessage():
 
 class ROSVision(object):
 
-    #def __init__(self):
-    #    rospy.init_node("rosvision", anonymous=True)
+    def __init__(self):
+        self.bridge = CvBridge()
 
-    def callback(self, data):
-        data_message = data#ImageMessage(data)
+    def callback(self, message):
         try:
-            data_message = CvBridge().imgmsg_to_cv2(data_message)
-            ret, jpeg = cv2.imencode('.jpg', data_message)
+            data = self.bridge.imgmsg_to_cv2(message, "bgr8")
+            """
+            cv2.imshow('roscv', data)
+            cv2.waitKey(1)
+            """
+            ret, jpeg = cv2.imencode('.jpg', data)
             self.conn.send(jpeg.tostring())
         except CvBridgeError as e:
-            print(e)
+            sys.stderr.write("%s\n" % e)
 
     def run(self, conn):
         self.conn = conn
         namespace = conn.recv()
-        rospy.Subscriber("rosx/stream/{0}".format(namespace), Image, self.callback)
+        rospy.Subscriber("/stream/{0}".format(namespace), Image, self.callback)
         rospy.spin()
 
 if __name__ == '__main__':
