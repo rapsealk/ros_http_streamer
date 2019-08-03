@@ -45,4 +45,4 @@ def stream():
 
 if __name__ == '__main__':
     rospy.init_node("ros_http_streamer", anonymous=False)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', threaded=True, debug=True)
