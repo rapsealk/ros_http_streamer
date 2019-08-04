@@ -14,7 +14,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 def main():
     rospy.init_node("camera_node", anonymous=False)
-    target_system_id = rospy.get_param('target_system_id')
+    target_system_id = rospy.get_param('/ns01/mavros/target_system_id')
     publisher = rospy.Publisher("/stream/{0}".format(target_system_id), Image, queue_size=10)
     bridge = CvBridge()
 
