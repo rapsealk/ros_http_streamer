@@ -14,7 +14,8 @@ from cv_bridge import CvBridge, CvBridgeError
 
 def main():
     rospy.init_node("camera_node", anonymous=False)
-    publisher = rospy.Publisher("/stream/1", Image, queue_size=10)
+    target_system_id = rospy.get_param('target_system_id')
+    publisher = rospy.Publisher("/stream/{0}".format(target_system_id), Image, queue_size=10)
     bridge = CvBridge()
 
     camera = cv2.VideoCapture(0)
