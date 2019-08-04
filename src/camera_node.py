@@ -21,11 +21,15 @@ def main():
     rate = rospy.Rate(30)   # FPS
     
     if not camera.isOpened():
-        camera.open()
+        camera.open(0)
+
+    print('camera.isOpened():', camera.isOpened())
 
     while camera.isOpened() and not rospy.is_shutdown():
         ret, frame = camera.read()
-
+        height, width = frame.shape[:2]
+        rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
+        frame = cv2.warpAffine(frame, rmatrix, (width, height))
         cv2.imshow('camera_node', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
