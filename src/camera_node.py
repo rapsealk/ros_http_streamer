@@ -31,7 +31,7 @@ def main():
         height, width = frame.shape[:2]
         rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
         frame = cv2.warpAffine(frame, rmatrix, (width, height))
-        cv2.imshow('camera_node', frame)
+        #cv2.imshow('camera_node', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -42,6 +42,9 @@ def main():
             sys.stderr.write("%s\n" % e)
 
         rate.sleep()
+
+    camera.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
