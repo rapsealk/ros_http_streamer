@@ -22,6 +22,10 @@ def generate_frame(conn):
             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n'
         )
 
+@app.route('/')
+def home():
+    return Response('<h1>Welcome to ROS-Flask!</h1>')
+
 @app.route('/stream')
 def stream():
     """
@@ -45,4 +49,4 @@ def stream():
 
 if __name__ == '__main__':
     rospy.init_node("ros_http_streamer", anonymous=False)
-    app.run(host='0.0.0.0', threaded=True, debug=True)
+    app.run(host='0.0.0.0', port=3000, threaded=True)#debug=True
