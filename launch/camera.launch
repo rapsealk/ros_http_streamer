@@ -1,0 +1,8 @@
+<launch>
+    <arg name="tgt_system" default="1" />
+    <arg name="namespace" default="/ns01" />
+
+    <node pkg="ros_http_streamer" type="camera_node.py" ns="$(arg namespace)" name="camera_node" output="screen">
+        <param name="target_system_id" value="$(arg tgt_system)" />
+    </node>
+</launch>

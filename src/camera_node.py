@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import sys
+import time
 import logging
 FORMAT = '%(asctime)-15s [%(levelname)s] %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
@@ -14,7 +15,10 @@ from cv_bridge import CvBridge, CvBridgeError
 
 def main():
     rospy.init_node("camera_node", anonymous=False)
-    target_system_id = rospy.get_param('/ns01/mavros/target_system_id')
+    try:
+        target_system_id = rospy.get_param('/ns01/mavros/target_system_id')
+    except KeyError:
+        target_system_id = 1
     publisher = rospy.Publisher("/stream/{0}".format(target_system_id), Image, queue_size=10)
     bridge = CvBridge()
 
@@ -31,13 +35,15 @@ def main():
         height, width = frame.shape[:2]
         rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
         frame = cv2.warpAffine(frame, rmatrix, (width, height))
-        #cv2.imshow('camera_node', frame)
+        """
+        cv2.imshow('camera_node', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+        """
         try:
             message = bridge.cv2_to_imgmsg(frame, "bgr8")
             publisher.publish(message)
+            sys.stdout.write("[%s] Frame published!\n" % time.time())
         except CvBridgeError as e:
             sys.stderr.write("%s\n" % e)
 
