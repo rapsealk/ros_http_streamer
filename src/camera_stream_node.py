@@ -92,8 +92,8 @@ def main():
     global publisher_01, publisher_02, publisher_03
     rospy.init_node("camera_stream_node", anonymous=False)
     publisher_01 = rospy.Publisher("/stream/1", Image, queue_size=10)
-    publisher_02 = rospy.Publisher("/stream/1", Image, queue_size=10)
-    publisher_03 = rospy.Publisher("/stream/1", Image, queue_size=10)
+    publisher_02 = rospy.Publisher("/stream/2", Image, queue_size=10)
+    publisher_03 = rospy.Publisher("/stream/3", Image, queue_size=10)
     rospy.Subscriber("/stream/bytes/1", ByteMultiArray, callback_01)
     rospy.Subscriber("/stream/bytes/2", ByteMultiArray, callback_02)
     rospy.Subscriber("/stream/bytes/3", ByteMultiArray, callback_03)
