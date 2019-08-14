@@ -8,10 +8,15 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
 import rospy
 from std_msgs.msg import ByteMultiArray, MultiArrayLayout, MultiArrayDimension
+import struct
 
 def callback(message):
     rospy.loginfo("ByteMultiArray")
-    rospy.loginfo("data: %s", str(message.data))
+    rospy.loginfo("data: %s, type: %s, type[0]: %s", str(message.data), type(message.data), type(message.data[0]))
+    bitarray = bytearray(message.data)
+    rospy.loginfo("bitarray: [%r]", bitarray)
+    bits = bytes(bitarray)
+    rospy.loginfo("bits: [%s]", bits)
     rospy.loginfo("layout.dim[0].size: %d", message.layout.dim[0].size)
     rospy.loginfo("---")
 
