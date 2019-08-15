@@ -6,7 +6,7 @@ import rospy
 from sensor_msgs.msg import Image
 import cv2
 
-import pickle
+import cPickle
 import zlib
 
 import os
@@ -63,8 +63,8 @@ def main():
         rospy.loginfo("Affine Transformation :: Rotation 180'")
         frame = frame.flatten()
         rospy.loginfo("Transformation :: Flatten")
-        framebytes = pickle.dumps(frame)
-        rospy.loginfo("pickle.dumps(frame)")
+        framebytes = cPickle.dumps(frame)
+        rospy.loginfo("cPickle.dumps(frame)")
         compressed = zlib.compress(framebytes, 5)
         rospy.loginfo("len(framebytes): %d, len(compressed): %d", len(framebytes), len(compressed))
 

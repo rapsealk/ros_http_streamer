@@ -8,7 +8,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 
-import pickle
+import cPickle
 import zlib
 
 import os
@@ -48,7 +48,7 @@ def callback_01(message):
     rospy.loginfo(log)
 
     decompressed = zlib.decompress(message.data)
-    flatten = pickle.loads(decompressed)
+    flatten = cPickle.loads(decompressed)
     frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
@@ -70,7 +70,7 @@ def callback_02(message):
     rospy.loginfo(log)
 
     decompressed = zlib.decompress(message.data)
-    flatten = pickle.loads(decompressed)
+    flatten = cPickle.loads(decompressed)
     frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
@@ -92,7 +92,7 @@ def callback_03(message):
     rospy.loginfo(log)
 
     decompressed = zlib.decompress(message.data)
-    flatten = pickle.loads(decompressed)
+    flatten = cPickle.loads(decompressed)
     frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
