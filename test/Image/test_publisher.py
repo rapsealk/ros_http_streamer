@@ -10,7 +10,6 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
 import rospy
 import cv2
-from std_msgs.msg import ByteMultiArray, MultiArrayLayout, MultiArrayDimension
 from sensor_msgs.msg import Image
 
 import pickle

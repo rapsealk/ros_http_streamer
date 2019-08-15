@@ -11,7 +11,6 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 import rospy
 import cv2
 import numpy as np
-from std_msgs.msg import ByteMultiArray, MultiArrayLayout, MultiArrayDimension
 from sensor_msgs.msg import Image
 
 import pickle
@@ -19,8 +18,6 @@ import zlib
 
 def callback(message):
     rospy.loginfo("Image")
-    #rospy.loginfo("data: [%s]", message.data)
-    #rospy.loginfo("layout.dim[0].size: %d", message.layout.dim[0].size)
     decompressed = zlib.decompress(message.data)
     flatten = pickle.loads(decompressed)
     frame = np.reshape(flatten, (480, 640, 3))

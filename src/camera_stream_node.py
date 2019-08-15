@@ -2,21 +2,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import rospy
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+import cv2
+import numpy as np
+
+import pickle
+import zlib
+
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+
 import sys
 import time
 import logging
 FORMAT = '%(asctime)-15s [%(levelname)s] %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-
-import rospy
-import cv2
-import numpy as np
-from std_msgs.msg import ByteMultiArray, MultiArrayLayout, MultiArrayDimension
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-
-import pickle
-import zlib
 
 publisher_01 = None
 publisher_02 = None
@@ -24,69 +26,81 @@ publisher_03 = None
 
 bridge = CvBridge()
 
+import json
+with open(BASE_DIR + '/config.json', 'r') as f:
+    data = ''.join(f.readlines())
+    data = json.loads(data)
+
+WIDTH = data['width']
+HEIGHT = data['height']
+CHANNEL = data['channel']
+
 # TODO: lambda
 def callback_01(message):
     global publisher_01
-    log = """ByteMultiArray /stream/bytes/1
-    - data: %s
-    - layout
-      - dim[0].label: %s
-      - dim[0].size: %d
-    ---""" % (str(message.data), message.layout[0].label, message.layout.size)
+    log = """Image /stream/bytes/1
+    - height: %d
+    - width: %d
+    - step: %d
+    - encoding: %s
+    - is_bigendian: %r
+    ---""" % (message.height, message.width, message.step, message.encoding, message.is_bigendian)
     rospy.loginfo(log)
-    raw_data = bytes(bytearray(message.data))
-    height, width, channel = message.layout[0].size, message.layout[1].size, message.layout[2].size
-    decompressed = zlib.decompress(raw_data)
-    matrix = pickle.loads(decompressed)
-    frame = np.reshape(matrix, (height, width, channel))
+
+    decompressed = zlib.decompress(message.data)
+    flatten = pickle.loads(decompressed)
+    frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
-        publisher_01.publish(image)
-        sys.stdout.write("[%s] Frame published!\n" % time.time())
     except CvBridgeError as e:
-        sys.stderr.write("%s\n" % e)
+        rospy.logerr("%s" % e)
+        return
+    publisher_01.publish(image)
+    rospy.loginfo("Image01 published!")
 
 def callback_02(message):
     global publisher_02
-    log = """ByteMultiArray /stream/bytes/2
-    - data: %s
-    - layout
-      - dim[0].label: %s
-      - dim[0].size: %d
-    ---""" % (str(message.data), message.layout[0].label, message.layout.size)
+    log = """Image /stream/bytes/2
+    - height: %d
+    - width: %d
+    - step: %d
+    - encoding: %s
+    - is_bigendian: %r
+    ---""" % (message.height, message.width, message.step, message.encoding, message.is_bigendian)
     rospy.loginfo(log)
-    raw_data = bytes(bytearray(message.data))
-    height, width, channel = message.layout[0].size, message.layout[1].size, message.layout[2].size
-    decompressed = zlib.decompress(raw_data)
-    matrix = pickle.loads(decompressed)
-    frame = np.reshape(matrix, (height, width, channel))
+
+    decompressed = zlib.decompress(message.data)
+    flatten = pickle.loads(decompressed)
+    frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
-        publisher_02.publish(image)
-        sys.stdout.write("[%s] Frame published!\n" % time.time())
     except CvBridgeError as e:
-        sys.stderr.write("%s\n" % e)
+        rospy.logerr("%s" % e)
+        return
+    publisher_02.publish(image)
+    rospy.loginfo("Image02 published!")
 
 def callback_03(message):
     global publisher_03
-    log = """ByteMultiArray /stream/bytes/3
-    - data: %s
-    - layout
-      - dim[0].label: %s
-      - dim[0].size: %d
-    ---""" % (str(message.data), message.layout[0].label, message.layout.size)
+    log = """Image /stream/bytes/3
+    - height: %d
+    - width: %d
+    - step: %d
+    - encoding: %s
+    - is_bigendian: %r
+    ---""" % (message.height, message.width, message.step, message.encoding, message.is_bigendian)
     rospy.loginfo(log)
-    raw_data = bytes(bytearray(message.data))
-    height, width, channel = message.layout[0].size, message.layout[1].size, message.layout[2].size
-    decompressed = zlib.decompress(raw_data)
-    matrix = pickle.loads(decompressed)
-    frame = np.reshape(matrix, (height, width, channel))
+
+    decompressed = zlib.decompress(message.data)
+    flatten = pickle.loads(decompressed)
+    frame = np.reshape(flatten, (HEIGHT, WIDTH, CHANNEL))
     try:
         image = bridge.cv2_to_imgmsg(frame, "bgr8")
-        publisher_03.publish(image)
-        sys.stdout.write("[%s] Frame published!\n" % time.time())
     except CvBridgeError as e:
-        sys.stderr.write("%s\n" % e)
+        rospy.logerr("%s" % e)
+        return
+    publisher_03.publish(image)
+    rospy.loginfo("Image03 published!")
 
 def main():
     global publisher_01, publisher_02, publisher_03
@@ -94,9 +108,9 @@ def main():
     publisher_01 = rospy.Publisher("/stream/1", Image, queue_size=10)
     publisher_02 = rospy.Publisher("/stream/2", Image, queue_size=10)
     publisher_03 = rospy.Publisher("/stream/3", Image, queue_size=10)
-    rospy.Subscriber("/stream/bytes/1", ByteMultiArray, callback_01)
-    rospy.Subscriber("/stream/bytes/2", ByteMultiArray, callback_02)
-    rospy.Subscriber("/stream/bytes/3", ByteMultiArray, callback_03)
+    rospy.Subscriber("/stream/bytes/1", Image, callback_01)
+    rospy.Subscriber("/stream/bytes/2", Image, callback_02)
+    rospy.Subscriber("/stream/bytes/3", Image, callback_03)
     rospy.spin()
 
 

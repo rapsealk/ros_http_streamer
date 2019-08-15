@@ -2,18 +2,28 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import rospy
+from sensor_msgs.msg import Image
+import cv2
+
+import pickle
+import zlib
+
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+
 import sys
 import time
 import logging
 FORMAT = '%(asctime)-15s [%(levelname)s] %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
-import rospy
-import cv2
-from std_msgs.msg import ByteMultiArray, MultiArrayLayout, MultiArrayDimension
-
-import pickle
-import zlib
+def parse_config():
+    import json
+    with open(BASE_DIR + '/config.json', 'r') as f:
+        data = ''.join(f.readlines())
+        data = json.loads(data)
+    return data
 
 def main():
     rospy.init_node("camera_bytes_node", anonymous=True)
@@ -21,60 +31,46 @@ def main():
         target_system_id = rospy.get_param('/ns02/mavros/target_system_id')
     except KeyError:
         target_system_id = 2
-    publisher = rospy.Publisher("/stream/bytes/{0}".format(target_system_id), ByteMultiArray, queue_size=10)
+    publisher = rospy.Publisher("/stream/bytes/{0}".format(target_system_id), Image, queue_size=10)
 
     camera = cv2.VideoCapture(0)
+    config = parse_config()
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
+    #camera.set(cv2.CAP_PROP_FPS, FPS)
+    camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
+
     rate = rospy.Rate(30)   # FPS
     
     if not camera.isOpened():
         camera.open(0)
 
-    print('camera.isOpened():', camera.isOpened())
+    rospy.loginfo('camera.isOpened(): %r', camera.isOpened())
 
     while camera.isOpened() and not rospy.is_shutdown():
         ret, frame = camera.read()
         height, width = frame.shape[:2]
         rospy.loginfo("height: %d, width: %d", height, width)
-        channel = 3
+        channel = config['channel']
         rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
         frame = cv2.warpAffine(frame, rmatrix, (width, height))
         frame = frame.flatten()
         framebytes = pickle.dumps(frame)
         compressed = zlib.compress(framebytes, 5)
         rospy.loginfo("len(framebytes): %d, len(compressed): %d", len(framebytes), len(compressed))
-        """
-        hdimension = MultiArrayDimension()
-        hdimension.label = "height"
-        hdimension.size = height
-        hdimension.stride = channel * width * height
 
-        wdimension = MultiArrayDimension()
-        wdimension.label = "width"
-        wdimension.size = width
-        wdimension.stride = channel * width
-
-        cdimension = MultiArrayDimension()
-        cdimension.label = "channel"
-        cdimension.size = channel
-        cdimension.stride = channel
-        """
-        dimension = MultiArrayDimension()
-        dimension.label = "bytes"
-        dimension.size = len(compressed)
-        dimension.stride = len(compressed)
-
-        layout = MultiArrayLayout()
-        layout.dim = [dimension]#[hdimension, wdimension, cdimension]
-        layout.data_offset = 0
-        message = ByteMultiArray()
-        message.layout = layout
-        message.data = tuple([i for i in bytearray(compressed)])#bytearray(compressed)
+        message = Image()
+        message.height = height
+        message.width = width
+        message.encoding = "8UC3"
+        message.is_bigendian = True
+        message.data = compressed
+        message.step = len(compressed) // height
         publisher.publish(message)
 
         rate.sleep()
 
     camera.release()
-    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
