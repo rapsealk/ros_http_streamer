@@ -37,10 +37,10 @@ def main():
     config = parse_config()
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
-    #camera.set(cv2.CAP_PROP_FPS, FPS)
-    camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
+    camera.set(cv2.CAP_PROP_FPS, 3)
+    #camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('X', '2', '6', '4'))
 
-    rate = rospy.Rate(30)   # FPS
+    rate = rospy.Rate(3)   # FPS
     
     if not camera.isOpened():
         camera.open(0)
@@ -49,6 +49,11 @@ def main():
 
     while camera.isOpened() and not rospy.is_shutdown():
         ret, frame = camera.read()
+        #
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        #
         height, width = frame.shape[:2]
         rospy.loginfo("height: %d, width: %d", height, width)
         channel = config['channel']
