@@ -37,10 +37,11 @@ def main():
     config = parse_config()
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
-    camera.set(cv2.CAP_PROP_FPS, 3)
+    #camera.set(cv2.CAP_PROP_FPS, 60)
+    #camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
     #camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('X', '2', '6', '4'))
 
-    rate = rospy.Rate(3)   # FPS
+    rate = rospy.Rate(60)   # FPS
     
     if not camera.isOpened():
         camera.open(0)
@@ -49,18 +50,21 @@ def main():
 
     while camera.isOpened() and not rospy.is_shutdown():
         ret, frame = camera.read()
-        #
+        """
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        #
+        """
         height, width = frame.shape[:2]
         rospy.loginfo("height: %d, width: %d", height, width)
         channel = config['channel']
         rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
         frame = cv2.warpAffine(frame, rmatrix, (width, height))
+        rospy.loginfo("Affine Transformation :: Rotation 180'")
         frame = frame.flatten()
+        rospy.loginfo("Transformation :: Flatten")
         framebytes = pickle.dumps(frame)
+        rospy.loginfo("pickle.dumps(frame)")
         compressed = zlib.compress(framebytes, 5)
         rospy.loginfo("len(framebytes): %d, len(compressed): %d", len(framebytes), len(compressed))
 
@@ -72,6 +76,7 @@ def main():
         message.data = compressed
         message.step = len(compressed) // height
         publisher.publish(message)
+        rospy.loginfo("Message sent!\n---")
 
         rate.sleep()
 
