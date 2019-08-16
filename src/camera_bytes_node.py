@@ -44,7 +44,7 @@ def main():
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
     camera.set(cv2.CAP_PROP_FPS, fps)
-    #camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
+    #camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)	# V4L
     camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'X264'))
 
     rate = rospy.Rate(fps)   # FPS
