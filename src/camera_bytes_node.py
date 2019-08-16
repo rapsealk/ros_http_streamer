@@ -6,7 +6,10 @@ import rospy
 from sensor_msgs.msg import Image
 import cv2
 
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 import zlib
 
 import os
@@ -17,6 +20,8 @@ import time
 import logging
 FORMAT = '%(asctime)-15s [%(levelname)s] %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+
+COLOR_WHITE = (255, 255, 255)
 
 def parse_config():
     import json
@@ -35,14 +40,16 @@ def main():
 
     camera = cv2.VideoCapture(0)
     config = parse_config()
+    fps = 1
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
-    #camera.set(cv2.CAP_PROP_FPS, 60)
+    camera.set(cv2.CAP_PROP_FPS, fps)
     #camera.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-    #camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('X', '2', '6', '4'))
+    camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'X264'))
 
-    rate = rospy.Rate(60)   # FPS
-    
+    rate = rospy.Rate(fps)   # FPS
+    seq = 0
+
     if not camera.isOpened():
         camera.open(0)
 
@@ -61,12 +68,21 @@ def main():
         rmatrix = cv2.getRotationMatrix2D((width/2, height/2), 180, 1)
         frame = cv2.warpAffine(frame, rmatrix, (width, height))
         rospy.loginfo("Affine Transformation :: Rotation 180'")
+
+        # Text
+        location = (0, 60)
+        fontscale = 0.75
+        thickness = 1
+        seq += 1
+        cv2.putText(frame, '[%f] Seq: #%d' % (time.time(), seq), location, cv2.FONT_HERSHEY_SIMPLEX, fontscale, COLOR_WHITE, thickness)
+        rospy.loginfo("Putting text..")
+
         frame = frame.flatten()
         rospy.loginfo("Transformation :: Flatten")
-        framebytes = cPickle.dumps(frame)
-        rospy.loginfo("cPickle.dumps(frame)")
+        framebytes = pickle.dumps(frame)
+        rospy.loginfo("pickle.dumps(frame)")
         compressed = zlib.compress(framebytes, 5)
-        rospy.loginfo("len(framebytes): %d, len(compressed): %d", len(framebytes), len(compressed))
+        rospy.loginfo("len(framebytes): %d, len(compressed): %d, compressed: %f%%", len(framebytes), len(compressed), float(len(framebytes) - len(compressed)) / len(framebytes) * 100)
 
         message = Image()
         message.height = height
