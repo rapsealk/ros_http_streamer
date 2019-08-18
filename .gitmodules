@@ -1,0 +1,6 @@
+[submodule "deps/zfp"]
+	path = deps/zfp
+	url = git://github.com/LLNL/zfp.git
+[submodule "deps/snappy"]
+	path = deps/snappy
+	url = https://github.com/google/snappy.git

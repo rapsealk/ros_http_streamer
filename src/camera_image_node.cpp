@@ -1,15 +1,15 @@
 /**
  * camera_image_node.cpp (c) 2019
  */
+#include <vector>
+
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-
 #include <cv_bridge/cv_bridge.h>
 
 #include <opencv2/opencv.hpp>
-#include <iostream>
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -26,8 +26,11 @@ int main(int argc, char *argv[])
     cv::VideoCapture cap(0);
     cv::Mat image;
 
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, WIDTH);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
+
     if (!cap.isOpened()) {
-        std::cerr << "Camera is not opened!" << std::endl;
+        ROS_ERROR("Camera is not opened!");
         return -1;
     }
 
@@ -36,15 +39,23 @@ int main(int argc, char *argv[])
     while (ros::ok() && cap.isOpened()) {
         cap.read(image);
         if (image.empty()) {
-            std::cerr << "Image is empty!" << std::endl;
+            ROS_ERROR("Image is empty!");
             break;
         }
 
         cv::imshow("Frame", image);
+        ROS_INFO("rows: %d, cols: %d, dims: %d", image.rows, image.cols, image.dims);
+        ROS_INFO("Image size: %d byte(s)", sizeof(uchar) * image.rows * image.cols * image.dims);
+
+        ros::Time time = ros::Time::now();
+        /* Compression */
+        //ROS_INFO("Compression: %fs, size: %d", ros::Time::now() - time, size);
 
         if (cv::waitKey(25) == 'q') {
             break;
         }
+
+        cv::Mat flatten = image.reshape(1, image.cols * image.rows);
 
         sensor_msgs::Image image_message;
         std_msgs::Header header;
@@ -54,7 +65,7 @@ int main(int argc, char *argv[])
         img_bridge.toImageMsg(image_message);
         image_pub.publish(image_message);
 
-        ROS_INFO("Seq #%d Frame is displayed!", seq);
+        ROS_INFO("Seq #%d Frame is displayed!\n---", seq);
         ros::spinOnce();
         rate.sleep();
     }

@@ -44,3 +44,12 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 ```
 $ g++ `pkg-config --libs opencv`
 ```
+* FFMPEG ([LINK](https://lembergsolutions.com/blog/how-process-live-video-stream-using-ffmpeg-and-opencv))
+
+## TODO
+
+https://dkant.net/2019/05/17/Gstreamer01
+https://bigcode.tistory.com/1
+https://gist.github.com/neilyoung/38ed9139fdb9396c8998bd1b4464d833
+
+Command packet

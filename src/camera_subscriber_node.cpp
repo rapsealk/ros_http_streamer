@@ -23,7 +23,10 @@ void callback(const sensor_msgs::Image::ConstPtr& message) {
         return;
     }
 
-    cv::imshow("Subscriber", cv_ptr->image);
+    cv::Mat image = cv_ptr->image.reshape(3, HEIGHT);
+
+    cv::imshow("Subscriber", image);
+    //cv::imshow("Subscriber", cv_ptr->image);
     cv::waitKey(3);
 }
 
