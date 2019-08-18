@@ -10,7 +10,6 @@ project(ros_http_streamer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  message_generation
   sensor_msgs
   std_msgs
   cv_bridge
@@ -18,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -50,10 +50,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-    Bytes.msg
-)
+# add_message_files(
+#   FILES
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -72,7 +71,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
     DEPENDENCIES
-	std_msgs
+    std_msgs
     sensor_msgs
 )
 
@@ -105,12 +104,12 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+# catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ros_http_streamer
-   CATKIN_DEPENDS message_runtime #roscpp rospy sensor_msgs std_msgs
+#  CATKIN_DEPENDS message_runtime #roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
-)
+# )
 
 ###########
 ## Build ##
@@ -121,6 +120,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -131,12 +131,12 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/ros_http_streamer_node.cpp)
+add_executable(camera_image_node src/camera_image_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,12 +146,10 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(camera_image_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(camera_image_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 #############
 ## Install ##
